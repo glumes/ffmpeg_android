@@ -1,36 +1,26 @@
-//extern "C" {
-//
-//#include "libavcodec/avcodec.h"
-//#include "libavformat/avformat.h"
-//#include "libavfilter/avfilter.h"
-//#include "libavcodec/jni.h"
-//
-//}
-
 #include <jni.h>
 #include <string>
 
-//#ifdef  __cplusplus
-//extern "C" {
-//#endif
-//
-//#include "libavcodec/avcodec.h"
-//#include "libavformat/avformat.h"
-//#include "libavfilter/avfilter.h"
-//#include "libavcodec/jni.h"
-//#ifdef  __cplusplus
-//};
-//#endif
+#include "common/logutil.h"
 
-
-
+#include "codec/FFmpegMediaCodec.h"
 
 extern "C" {
 
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libavfilter/avfilter.h>
-#include <libavcodec/jni.h>
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
+#include "libavfilter/avfilter.h"
+#include "libavcodec/jni.h"
+
+
+JNIEXPORT
+jint JNI_OnLoad(JavaVM *vm, void *res) {
+    LOGD("JNI_OnLoad and av_jni_set_java_vm");
+    av_jni_set_java_vm(vm, 0);
+    // 返回jni版本
+    return JNI_VERSION_1_4;
+}
+
 
 JNIEXPORT jstring JNICALL
 Java_com_glumes_demo_MainActivity_stringFromJNI(
@@ -38,9 +28,6 @@ Java_com_glumes_demo_MainActivity_stringFromJNI(
         jobject /* this */) {
 
     char info[40000] = {0};
-
-    av_register_all();
-
 
     AVCodec* c_temp = av_codec_next(nullptr);
 
@@ -71,4 +58,18 @@ Java_com_glumes_demo_MainActivity_stringFromJNI(
     return env->NewStringUTF(info);
 }
 
+JNIEXPORT void JNICALL
+Java_com_glumes_demo_MainActivity_decodeWithPath(JNIEnv *env, jobject thiz, jstring path) {
+
+    const char *inputPath = "/sdcard/Download/Kobe.flv";
+    const char* outputPath = "/sdcard/sintel.yuv";
+
+
+    FFmpegMediaCodec* mediaCodec = new FFmpegMediaCodec;
+    int ret = mediaCodec->decode(inputPath,outputPath);
+    LOGD("mediacodec ret is %d",ret);
+
 }
+
+}
+

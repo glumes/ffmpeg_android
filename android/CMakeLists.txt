@@ -31,16 +31,22 @@ set_target_properties(swscale PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURC
 
 
 
-include_directories(../ffmpeg/android/armeabi-v7a/include)
+
+include_directories(../ffmpeg_library/android/armeabi-v7a/include)
+
+include_directories(app/src/main/cpp/codec)
+include_directories(app/src/main/cpp/common)
 
 add_library( # Sets the name of the library.
-             native-lib
+        native-lib
 
-             # Sets the library as a shared library.
-             SHARED
+        # Sets the library as a shared library.
+        SHARED
 
-             # Provides a relative path to your source file(s).
-        app/src/main/cpp/native-lib.cpp)
+        # Provides a relative path to your source file(s).
+        app/src/main/cpp/native-lib.cpp
+        app/src/main/cpp/codec/FFmpegMediaCodec.cpp
+        )
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
