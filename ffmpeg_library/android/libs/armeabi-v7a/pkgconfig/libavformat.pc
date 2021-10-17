@@ -1,0 +1,14 @@
+prefix=/Users/glumes/ffmpeg_build/ffmpeg/../ffmpeg_library/android/armeabi-v7a
+exec_prefix=${prefix}
+libdir=/Users/glumes/ffmpeg_build/ffmpeg/../ffmpeg_library/android/libs/armeabi-v7a
+includedir=/Users/glumes/ffmpeg_build/ffmpeg/../ffmpeg_library/android/armeabi-v7a/include
+
+Name: libavformat
+Description: FFmpeg container format library
+Version: 58.76.100
+Requires: 
+Requires.private: libavcodec >= 58.134.100, libavutil >= 56.70.100
+Conflicts:
+Libs: -L${libdir}  -lavformat 
+Libs.private: -lm -lz
+Cflags: -I${includedir}
