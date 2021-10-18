@@ -9,8 +9,7 @@ static AVBufferRef *hw_device_ctx = NULL;
 static enum AVPixelFormat hw_pix_fmt;
 static FILE *output_file = NULL;
 
-static int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type)
-{
+static int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type) {
     int err = 0;
 
     if ((err = av_hwdevice_ctx_create(&hw_device_ctx, type,
@@ -24,8 +23,7 @@ static int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type)
 }
 
 static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
-                                        const enum AVPixelFormat *pix_fmts)
-{
+                                        const enum AVPixelFormat *pix_fmts) {
     const enum AVPixelFormat *p;
 
     for (p = pix_fmts; *p != -1; p++) {
@@ -37,8 +35,7 @@ static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
     return AV_PIX_FMT_NONE;
 }
 
-static int decode_write(AVCodecContext *avctx, AVPacket *packet)
-{
+static int decode_write(AVCodecContext *avctx, AVPacket *packet) {
     AVFrame *frame = NULL, *sw_frame = NULL;
     AVFrame *tmp_frame = NULL;
     uint8_t *buffer = NULL;
@@ -47,12 +44,9 @@ static int decode_write(AVCodecContext *avctx, AVPacket *packet)
 
     ret = avcodec_send_packet(avctx, packet);
     if (ret < 0) {
-        LOGE("Error during decoding and ret is %d(%s)\n",ret,av_err2str(ret));
-        if (ret != AVERROR(EAGAIN)){
+        if (ret != AVERROR(EAGAIN)) {
             LOGE("avcodec_send_packet not again");
             return ret;
-        }else{
-            LOGE("avcodec_send_packet success");
         }
     }
 
@@ -83,7 +77,8 @@ static int decode_write(AVCodecContext *avctx, AVPacket *packet)
         } else
             tmp_frame = frame;
 
-        size = av_image_get_buffer_size(static_cast<AVPixelFormat>(tmp_frame->format), tmp_frame->width,
+        size = av_image_get_buffer_size(static_cast<AVPixelFormat>(tmp_frame->format),
+                                        tmp_frame->width,
                                         tmp_frame->height, 1);
         buffer = static_cast<uint8_t *>(av_malloc(size));
         if (!buffer) {
@@ -92,8 +87,8 @@ static int decode_write(AVCodecContext *avctx, AVPacket *packet)
             goto fail;
         }
         ret = av_image_copy_to_buffer(buffer, size,
-                                      (const uint8_t * const *)tmp_frame->data,
-                                      (const int *)tmp_frame->linesize,
+                                      (const uint8_t *const *) tmp_frame->data,
+                                      (const int *) tmp_frame->linesize,
                                       static_cast<AVPixelFormat>(tmp_frame->format),
                                       tmp_frame->width, tmp_frame->height, 1);
         if (ret < 0) {
@@ -127,13 +122,13 @@ int FFmpegMediaCodec::decode(const std::string &input, const std::string &output
     enum AVHWDeviceType type;
     int i;
 
-    const char* mediacodec = "mediacodec";
+    const char *mediacodec = "mediacodec";
 
     type = av_hwdevice_find_type_by_name(mediacodec);
     if (type == AV_HWDEVICE_TYPE_NONE) {
         LOGE("Device type %s is not supported.\n", mediacodec);
         LOGE("Available device types:");
-        while((type = av_hwdevice_iterate_types(type)) != AV_HWDEVICE_TYPE_NONE)
+        while ((type = av_hwdevice_iterate_types(type)) != AV_HWDEVICE_TYPE_NONE)
             LOGE(" %s", av_hwdevice_get_type_name(type));
         LOGE("\n");
         return -1;
@@ -169,7 +164,7 @@ int FFmpegMediaCodec::decode(const std::string &input, const std::string &output
         const AVCodecHWConfig *config = avcodec_get_hw_config(decoder, i);
         if (!config) {
             LOGE("Decoder %s does not support device type %s.\n",
-                    decoder->name, av_hwdevice_get_type_name(type));
+                 decoder->name, av_hwdevice_get_type_name(type));
             return -1;
         }
         if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX &&
@@ -188,7 +183,7 @@ int FFmpegMediaCodec::decode(const std::string &input, const std::string &output
     if (avcodec_parameters_to_context(decoder_ctx, video->codecpar) < 0)
         return -1;
 
-    decoder_ctx->get_format  = get_hw_format;
+    decoder_ctx->get_format = get_hw_format;
 
     if (hw_decoder_init(decoder_ctx, type) < 0)
         return -1;
