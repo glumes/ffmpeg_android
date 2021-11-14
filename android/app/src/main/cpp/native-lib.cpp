@@ -24,39 +24,51 @@ JNIEXPORT void JNICALL
 Java_com_glumes_demo_MainActivity_decodeWithPath(JNIEnv *env, jobject thiz, jstring path) {
 
     const char *inputPath = "/sdcard/Download/Kobe.flv";
-    const char* outputPath = "/sdcard/sintel.yuv";
+    const char *outputPath = "/sdcard/sintel.yuv";
 
-char info[40000] = {0};
+    char info[40000] = {0};
 
-AVCodec *c_temp = av_codec_next(NULL);
-while (c_temp != NULL) {
-    if (c_temp->decode != NULL) {
-        sprintf(info, "%s[Dec]", info);
-    } else {
-        sprintf(info, "%s[Enc]", info);
+    AVCodec *c_temp = av_codec_next(NULL);
+    while (c_temp != NULL) {
+        if (c_temp->decode != NULL) {
+            sprintf(info, "%s[Dec]", info);
+        } else {
+            sprintf(info, "%s[Enc]", info);
+        }
+
+        switch (c_temp->type) {
+            case AVMEDIA_TYPE_VIDEO:
+                sprintf(info, "%s[Video]", info);
+                break;
+            case AVMEDIA_TYPE_AUDIO:
+                sprintf(info, "%s[Audio]", info);
+                break;
+            default:
+                sprintf(info, "%s[Other]", info);
+                break;
+        }
+        sprintf(info, "%s %10s\n", info, c_temp->name);
+        c_temp = c_temp->next;
     }
 
-    switch (c_temp->type) {
-        case AVMEDIA_TYPE_VIDEO:
-            sprintf(info, "%s[Video]", info);
-            break;
-        case AVMEDIA_TYPE_AUDIO:
-            sprintf(info, "%s[Audio]", info);
-            break;
-        default:
-            sprintf(info, "%s[Other]", info);
-            break;
-    }
-    sprintf(info, "%s %10s\n", info, c_temp->name);
-    c_temp = c_temp->next;
+    LOGD("%s", info);
+
+    FFmpegMediaCodec *mediaCodec = new FFmpegMediaCodec;
+    int ret = mediaCodec->decode(inputPath, outputPath);
+    LOGD("mediacodec ret is %d", ret);
+
 }
 
-    LOGD("%s",info);
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_glumes_demo_Decoder_decodeToSurface(JNIEnv *env, jobject thiz, jstring path,
+                                             jobject surface) {
 
-    FFmpegMediaCodec* mediaCodec = new FFmpegMediaCodec;
-    int ret = mediaCodec->decode(inputPath,outputPath);
-    LOGD("mediacodec ret is %d",ret);
+    const char *inputPath = "/sdcard/sintel.mp4";
 
+    FFmpegMediaCodec *mediaCodec = new FFmpegMediaCodec;
+    int ret = mediaCodec->decode(inputPath, surface);
+    LOGD("mediacodec ret is %d", ret);
 }
 
 }
